@@ -1,5 +1,3 @@
-// Datos por estado. Cada dulce puede tener imagen (img) y descripción breve.
-// Para agregar un dulce nuevo: añade un objeto { nombre, descripcion, imagen } al arreglo "dulces".
 const data = {
   michoacan: {
     nombre: "Michoacán",
@@ -110,13 +108,18 @@ tabs.forEach(tab => {
 
 render('michoacan');
 
-// Envío de formulario (placeholder: sustituir por integración real, ej. Formspree o backend propio)
 const form = document.getElementById('contact-form');
 const status = document.getElementById('form-status');
+let hideStatusTimeout;
 if (form) {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    status.textContent = '¡Gracias! Tu pedido fue enviado.';
+    clearTimeout(hideStatusTimeout);
+    status.textContent = '¡Gracias! Tu pedido fue enviado. Pronto alguien se comunicará con usted.';
+    status.classList.add('visible');
     form.reset();
+    hideStatusTimeout = setTimeout(() => {
+      status.classList.remove('visible');
+    }, 6000);
   });
 }
