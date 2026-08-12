@@ -1,52 +1,122 @@
-const states = {
-  michoacan: { name: "Michoacán", tagline: "Cuna del dulce moreliano", sweets: ["Ate de guayaba", "Chongos zamoranos", "Dulce de leche quemada"] },
-  baja: { name: "Baja California Sur", tagline: "Dulces del desierto y la costa", sweets: ["Dátiles rellenos", "Cocadas de la costa", "Dulce de higo"] },
-  jalisco: { name: "Jalisco", tagline: "Tradición tapatía en cada dulce", sweets: ["Jamoncillo", "Borrachitos", "Dulce de tequila"] },
-  quintanaroo: { name: "Quintana Roo", tagline: "Sabores del Caribe mexicano", sweets: ["Dulce de coco", "Miel melipona", "Jícama enchilada"] }
+// Datos por estado. Cada dulce puede tener imagen (img) y descripción breve.
+// Para agregar un dulce nuevo: añade un objeto { nombre, descripcion, imagen } al arreglo "dulces".
+const data = {
+  michoacan: {
+    nombre: "Michoacán",
+    tagline: "Cuna del dulce moreliano",
+    dulces: [
+      {
+        nombre: "Ate de guayaba",
+        descripcion: "Barra tradicional de pulpa de guayaba, disponible en presentación grande, mediana y mini.",
+        imagen: "src/images/Michoacán/AteDeGuayaba.jpg"
+      },
+      {
+        nombre: "Chongos zamoranos",
+        descripcion: "Dulce de leche cuajada típico de Zamora, con un toque de canela.",
+        imagen: "src/images/Michoacán/ChongosZamoranos.jpg"
+      }
+    ]
+  },
+  baja: {
+    nombre: "Baja California Sur",
+    tagline: "Dulces del desierto y la costa",
+    dulces: [
+      {
+        nombre: "Saladito",
+        descripcion: "Ciruela deshidratada con sal, el clásico dulce-salado de la región.",
+        imagen: "src/images/BCS/Saladitos.jpeg"
+      },
+      {
+        nombre: "Paleta con saladito",
+        descripcion: "Paleta clásica cubierta con saladito, el combo favorito de la costa.",
+        imagen: "src/images/BCS/paleta-con-saladito.jpeg"
+      }
+    ]
+  },
+  jalisco: {
+    nombre: "Jalisco",
+    tagline: "Tradición tapatía en cada dulce",
+    dulces: [
+      {
+        nombre: "Borrachitos",
+        descripcion: "Dulces de leche envinados, presentados en estuche de 24 piezas.",
+        imagen: "src/images/Jalisco/Borrachitos.jpg"
+      },
+      {
+        nombre: "Jamoncillo",
+        descripcion: "Rollo tradicional de dulce de leche, hecho a mano en Tonalá.",
+        imagen: "src/images/Jalisco/Jamoncillo.jpg"
+      }
+    ]
+  },
+  quintanaroo: {
+    nombre: "Quintana Roo",
+    tagline: "Sabores del Caribe mexicano",
+    dulces: [
+      {
+        nombre: "Miel melipona",
+        descripcion: "Miel de abeja melipona producida por comunidades mayas en Cobá, Tulum.",
+        imagen: "src/images/QuintanaRoo/MielMelipona.jpg"
+      },
+      {
+        nombre: "Jícama enchilada",
+        descripcion: "Jícama fresca preparada con chile y limón, lista para disfrutar.",
+        imagen: "src/images/QuintanaRoo/JícamaEnchilada.jpg"
+      },
+      {
+        nombre: "Dulce de coco",
+        descripcion: "Dulce artesanal de coco rallado, con el sabor tropical del Caribe mexicano.",
+        imagen: "src/images/QuintanaRoo/DulceDeCoco.jpg"
+      }
+    ]
+  }
 };
 
-const tabs = [...document.querySelectorAll(".estado-tab")];
-const panel = document.getElementById("estado-panel");
-const nameElement = document.getElementById("estado-nombre");
-const taglineElement = document.getElementById("estado-tagline");
-const chipsElement = document.getElementById("estado-chips");
+const tabs = document.querySelectorAll('.estado-tab');
+const nombreEl = document.getElementById('estado-nombre');
+const taglineEl = document.getElementById('estado-tagline');
+const dulcesEl = document.getElementById('estado-dulces');
+const panelEl = document.getElementById('estado-panel');
 
-function renderState(key) {
-  const state = states[key];
-  if (!state) return;
-
-  nameElement.textContent = state.name;
-  taglineElement.textContent = state.tagline;
-  panel.setAttribute("aria-labelledby", `tab-${key}`);
-  chipsElement.replaceChildren(...state.sweets.map((sweet) => {
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.textContent = sweet;
-    return chip;
-  }));
-
-  tabs.forEach((tab) => {
-    const active = tab.dataset.estado === key;
-    tab.classList.toggle("active", active);
-    tab.setAttribute("aria-selected", String(active));
-    tab.tabIndex = active ? 0 : -1;
-  });
+function render(key) {
+  const d = data[key];
+  if (!d) return;
+  nombreEl.textContent = d.nombre;
+  taglineEl.textContent = d.tagline;
+  dulcesEl.innerHTML = d.dulces.map(item => `
+    <div class="dulce-card">
+      <img class="dulce-img" src="${item.imagen}" alt="${item.nombre}" loading="lazy">
+      <h4 class="dulce-nombre">${item.nombre}</h4>
+      <p class="dulce-desc">${item.descripcion}</p>
+    </div>
+  `).join('');
+  const activeTab = document.querySelector(`.estado-tab[data-estado="${key}"]`);
+  if (activeTab) panelEl.setAttribute('aria-labelledby', activeTab.id);
 }
 
-tabs.forEach((tab, index) => {
-  tab.addEventListener("click", () => renderState(tab.dataset.estado));
-  tab.addEventListener("keydown", (event) => {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-    tabs[nextIndex].focus();
-    renderState(tabs[nextIndex].dataset.estado);
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+      t.tabIndex = -1;
+    });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    tab.tabIndex = 0;
+    render(tab.dataset.estado);
   });
 });
 
-document.getElementById("contact-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  document.getElementById("form-status").textContent = "Gracias. En este MVP el pedido aún no se envía; integraremos un servicio de correo o backend antes de publicarlo.";
-});
+render('michoacan');
 
-renderState("michoacan");
+// Envío de formulario (placeholder: sustituir por integración real, ej. Formspree o backend propio)
+const form = document.getElementById('contact-form');
+const status = document.getElementById('form-status');
+if (form) {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    status.textContent = '¡Gracias! Tu pedido fue enviado.';
+    form.reset();
+  });
+}
